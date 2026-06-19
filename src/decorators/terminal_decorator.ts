@@ -67,11 +67,15 @@ export class CommandTipsTerminalDecorator extends TerminalDecorator {
     this.logger.info('attach() called')
     this.activeTab = tab
 
-    // 监听 tab 获得焦点事件，切换 tab 时更新 activeTab
+    // 监听 tab 获得焦点事件
+    // - 跨 tab 切换：重置 currentInput，避免上一 tab 的输入残留串扰
+    // - 同 tab 内窗口失焦再聚焦：保留 currentInput，否则用户输入到一半切走再回来下拉无法继续触发
     const focusedSub = tab.focused$.subscribe(() => {
-      this.activeTab = tab
-      this.hideDropdown()
-      this.currentInput = ''
+      if (this.activeTab !== tab) {
+        this.activeTab = tab
+        this.hideDropdown()
+        this.currentInput = ''
+      }
     })
     this.subscriptions.push(focusedSub)
 
